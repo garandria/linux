@@ -16,6 +16,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <graphviz/cgraph.h>
+
 #include "lkc.h"
 
 /* return true if 'path' exists, false otherwise */
@@ -347,6 +349,78 @@ e_out:
 	return -1;
 }
 
+int c_read(const char *name, Agraph_t **graph, const char *color){
+
+	FILE *config = NULL;
+	int conf_lineno;
+  	char   *line = NULL;
+	size_t  line_asize = 0;
+	struct symbol *sym;
+	char *p, *p2;
+
+	Agraph_t *g = *graph;
+	Agnode_t *symnode, *filenode;
+	Agedge_t *edge;
+	
+	/* open configuration file "name" */
+	if (name)
+		config = zconf_fopen(name);
+	else{
+		name = conf_get_configname();
+		config = zconf_fopen(name);
+	}
+	
+	conf_lineno = 0;
+
+	while (compat_getline(&line, &line_asize, config) != -1) {
+		conf_lineno ++;
+		sym = NULL;
+		
+		if (line[0] == '#'){
+			continue;
+		}else if (memcmp(line, CONFIG_, strlen(CONFIG_)) == 0){
+			p = strchr(line + strlen(CONFIG_), '=');
+			if (!p)
+				continue;
+			*p++ = 0;
+			p2 = strchr(p, '\n');
+			if (p2) {
+				*p2-- = 0;
+				if (*p2 == '\r')
+					*p2 = 0;
+			}
+			sym = sym_find(line + strlen(CONFIG_));
+			if (!sym)
+				continue;
+			
+			symnode = agnode(g, sym->name, FALSE);
+			if (symnode == NULL){
+				symnode = agnode(g, sym->name, TRUE);
+			}
+			if (color != NULL)
+				agset(symnode, "color", color);
+			filenode = agnode(g, sym->prop->file->name, FALSE);
+			if (filenode == NULL){
+				filenode = agnode(g, sym->prop->file->name, TRUE);
+				if (color != NULL)
+					agset(filenode, "color", color);
+			}
+			edge = agedge(g, symnode, filenode, NULL, FALSE);
+			if (edge == NULL){
+				edge = agedge(g, symnode, filenode, NULL, TRUE);
+			}
+			if (color != NULL)
+				agset(edge, "color", color);
+		}else{
+			if (line[0] != '\r' && line[0] != '\n')
+				printf("UNEXPECTED DATA: %s\n", line);
+			continue;
+		}
+	}
+	return EXIT_SUCCESS;
+}
+
+
 int conf_read_simple(const char *name, int def)
 {
 	FILE *in = NULL;
@@ -355,7 +429,7 @@ int conf_read_simple(const char *name, int def)
 	char *p, *p2;
 	struct symbol *sym;
 	int i, def_flags;
-
+	
 	if (name) {
 		in = zconf_fopen(name);
 	} else {
