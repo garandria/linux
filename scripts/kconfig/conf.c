@@ -616,7 +616,7 @@ int main(int ac, char **av)
 		diffcname = getenv("GRAPHCONFIG_DIFF");
 		if (name)
 			printf("GRAPHCONFIG=%s\n", name);
-		else:
+		else
 		  name = "out.dot";
 		if (diffcname){
 			memset(buf, 0, 256);
