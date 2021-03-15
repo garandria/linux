@@ -411,7 +411,7 @@ ifneq ($(LLVM),)
 HOSTCC	= clang
 HOSTCXX	= clang++
 else
-HOSTCC	= gcc
+HOSTCC	= gcc -g -lcgraph
 HOSTCXX	= g++
 endif
 
