@@ -1,9 +1,11 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 #include <stdarg.h>
+#include <graphviz/cgraph.h>
 
 /* confdata.c */
 void conf_parse(const char *name);
 int conf_read(const char *name);
+int c_read(const char *name, Agraph_t **graph, const char *color);
 int conf_read_simple(const char *name, int);
 int conf_write_defconfig(const char *name);
 int conf_write(const char *name);
