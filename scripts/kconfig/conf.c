@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <errno.h>
+#include <graphviz/cgraph.h>
 
 #include "lkc.h"
 
@@ -36,6 +37,7 @@ enum input_mode {
 	olddefconfig,
 	yes2modconfig,
 	mod2yesconfig,
+	graphconfig,
 };
 static enum input_mode input_mode = oldaskconfig;
 
@@ -471,6 +473,7 @@ static struct option long_opts[] = {
 	{"olddefconfig",    no_argument,       NULL, olddefconfig},
 	{"yes2modconfig",   no_argument,       NULL, yes2modconfig},
 	{"mod2yesconfig",   no_argument,       NULL, mod2yesconfig},
+	{"graphconfig",     no_argument,       NULL, graphconfig},
 	{NULL, 0, NULL, 0}
 };
 
@@ -495,7 +498,9 @@ static void conf_usage(const char *progname)
 	printf("  --randconfig            New config with random answer to all options\n");
 	printf("  --yes2modconfig         Change answers from yes to mod if possible\n");
 	printf("  --mod2yesconfig         Change answers from mod to yes if possible\n");
+	printf("  --graphconfig           Graph representation of option repartition\n");
 }
+
 
 int main(int ac, char **av)
 {
@@ -503,7 +508,12 @@ int main(int ac, char **av)
 	int opt;
 	const char *name, *defconfig_file = NULL /* gcc uninit */;
 	int no_conf_write = 0;
-
+	FILE *output = NULL;
+	char *diffcname;
+	const char *configfile = ".config";
+	char buf[256];
+	Agraph_t *g;
+	
 	tty_stdio = isatty(0) && isatty(1);
 
 	while ((opt = getopt_long(ac, av, "s", long_opts, NULL)) != -1) {
@@ -560,6 +570,7 @@ int main(int ac, char **av)
 		case helpnewconfig:
 		case olddefconfig:
 		case yes2modconfig:
+		case graphconfig:
 		case mod2yesconfig:
 			break;
 		case '?':
@@ -575,6 +586,7 @@ int main(int ac, char **av)
 	}
 	name = av[optind];
 	conf_parse(name);
+	
 	//zconfdump(stdout);
 
 	switch (input_mode) {
@@ -599,6 +611,19 @@ int main(int ac, char **av)
 	case mod2yesconfig:
 		conf_read(NULL);
 		break;
+	case graphconfig:
+		name = getenv("GRAPHCONFIG");
+		diffcname = getenv("GRAPHCONFIG_DIFF");
+		if (name)
+			printf("GRAPHCONFIG=%s\n", name);
+		else:
+		  name = "out.dot";
+		if (diffcname){
+			memset(buf, 0, 256);
+			printf("GRAPHCONFIG_DIFF=%s\n", name);
+		}
+		no_conf_write = 1;
+		break;	
 	case allnoconfig:
 	case allyesconfig:
 	case allmodconfig:
@@ -690,6 +715,24 @@ int main(int ac, char **av)
 			conf_cnt = 0;
 			check_conf(&rootmenu);
 		} while (conf_cnt);
+		break;
+	case graphconfig:
+		g = agopen("G", Agdirected, NULL);
+		agattr(g, AGNODE, "color", "black");
+		agattr(g, AGEDGE, "color", "black");
+		c_read(configfile, &g, NULL);
+		if (diffcname){
+			sprintf(buf,
+				"diff -u %s %s | grep -E \"^\\+CONFIG_\" | tr -d '+' > .diffconfig_add ; diff -u %s %s | grep -E \"^\\-CONFIG_\" | tr -d '-' > .diffconfig_minus",
+				configfile, diffcname, configfile, diffcname);
+			system(buf);
+			c_read(".diffconfig_add", &g, "darkgreen");
+			c_read(".diffconfig_minus", &g, "red");
+		}
+		output = fopen(name, "w");
+		agwrite(g, output);
+		agclose(g);
+		fclose(output);
 		break;
 	case olddefconfig:
 	default:
