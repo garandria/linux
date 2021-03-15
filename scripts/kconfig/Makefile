@@ -63,7 +63,7 @@ localyesconfig localmodconfig: $(obj)/conf
 #  deprecated for external use
 simple-targets := oldconfig allnoconfig allyesconfig allmodconfig \
 	alldefconfig randconfig listnewconfig olddefconfig syncconfig \
-	helpnewconfig yes2modconfig mod2yesconfig
+	helpnewconfig yes2modconfig mod2yesconfig graphconfig
 
 PHONY += $(simple-targets)
 
@@ -143,6 +143,7 @@ help:
 	@echo  '                    default value without prompting'
 	@echo  '  tinyconfig	  - Configure the tiniest possible kernel'
 	@echo  '  testconfig	  - Run Kconfig unit tests (requires python3 and pytest)'
+	@echo  '  graphconfig     - Build graph representation of configuration options'
 
 # ===========================================================================
 # object files used by all kconfig flavours
