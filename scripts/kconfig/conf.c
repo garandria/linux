@@ -509,7 +509,7 @@ int main(int ac, char **av)
 	const char *name, *defconfig_file = NULL /* gcc uninit */;
 	int no_conf_write = 0;
 	FILE *output = NULL;
-	char *diffcname;
+	char *diffcname = NULL;
 	const char *configfile = ".config";
 	char buf[256];
 	Agraph_t *g;
@@ -721,7 +721,7 @@ int main(int ac, char **av)
 		agattr(g, AGNODE, "color", "black");
 		agattr(g, AGEDGE, "color", "black");
 		c_read(configfile, &g, NULL);
-		if (diffcname){
+		if (diffcname != NULL){
 			sprintf(buf,
 				"diff -u %s %s | grep -E \"^\\+CONFIG_\" | tr -d '+' > .diffconfig_add ; diff -u %s %s | grep -E \"^\\-CONFIG_\" | tr -d '-' > .diffconfig_minus",
 				configfile, diffcname, configfile, diffcname);

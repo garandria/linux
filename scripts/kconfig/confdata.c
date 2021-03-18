@@ -349,7 +349,7 @@ e_out:
 	return -1;
 }
 
-int c_read(const char *name, Agraph_t **graph, const char *color){
+int c_read(const char *name, Agraph_t **graph, char *color){
 
 	FILE *config = NULL;
 	int conf_lineno;
@@ -360,6 +360,7 @@ int c_read(const char *name, Agraph_t **graph, const char *color){
 
 	Agraph_t *g = *graph;
 	Agnode_t *symnode, *filenode;
+	char *fname, *dname;
 	Agedge_t *edge;
 	
 	/* open configuration file "name" */
@@ -398,16 +399,19 @@ int c_read(const char *name, Agraph_t **graph, const char *color){
 			sym = sym_find(line + strlen(CONFIG_));
 			if (!sym)
 				continue;
+
+			fname = sym->name;
+			dname = (char *)sym->prop->file->name;
 			
-			symnode = agnode(g, sym->name, FALSE);
+			symnode = agnode(g, fname, FALSE);
 			if (symnode == NULL){
-				symnode = agnode(g, sym->name, TRUE);
+				symnode = agnode(g, fname, TRUE);
 			}
 			if (color != NULL)
 				agset(symnode, "color", color);
-			filenode = agnode(g, sym->prop->file->name, FALSE);
+			filenode = agnode(g, dname, FALSE);
 			if (filenode == NULL){
-				filenode = agnode(g, sym->prop->file->name, TRUE);
+				filenode = agnode(g, dname, TRUE);
 				if (color != NULL)
 					agset(filenode, "color", color);
 			}
