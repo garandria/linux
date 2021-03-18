@@ -360,9 +360,13 @@ int c_read(const char *name, Agraph_t **graph, char *color){
 
 	Agraph_t *g = *graph;
 	Agnode_t *symnode, *filenode;
-	char *fname, *dname;
+	char *fname;
 	Agedge_t *edge;
-	
+
+	char *cmdo = NULL, buf[256], dname[256];
+
+	memset(buf, 0, 256);
+ 	
 	/* open configuration file "name" */
 	if (name)
 		config = zconf_fopen(name);
@@ -401,26 +405,37 @@ int c_read(const char *name, Agraph_t **graph, char *color){
 				continue;
 
 			fname = sym->name;
-			dname = (char *)sym->prop->file->name;
-			
-			symnode = agnode(g, fname, FALSE);
-			if (symnode == NULL){
-				symnode = agnode(g, fname, TRUE);
-			}
-			if (color != NULL)
-				agset(symnode, "color", color);
-			filenode = agnode(g, dname, FALSE);
-			if (filenode == NULL){
-				filenode = agnode(g, dname, TRUE);
+			/* dname = (char *)sym->prop->file->name; */
+			sprintf(buf,
+				"egrep -r 'CONFIG_%s' %s | grep -o \".*c:\" | sort -t: -u -k1,1 | tr -d ':'",
+				fname, ".");
+			cmdo = popen(buf, "r");
+			while ((fscanf(cmdo, "%s", &dname)) != EOF){
+				filenode = agnode(g, dname, FALSE);
+				if (filenode == NULL){
+					filenode = agnode(g, dname, TRUE);
+					if (color != NULL)
+						agset(filenode, "color", color);
+				}
+				symnode = agnode(g, fname, FALSE);
+				if (symnode == NULL){
+					symnode = agnode(g, fname, TRUE);
+				}
 				if (color != NULL)
-					agset(filenode, "color", color);
+					agset(symnode, "color", color);
+				edge = agedge(g, symnode, filenode, NULL, FALSE);
+				if (edge == NULL){
+					edge = agedge(g, symnode, filenode, NULL, TRUE);
+				}
+				if (color != NULL)
+					agset(edge, "color", color);
+
+			}			  			
+			if (cmdo == NULL){
+				return EXIT_FAILURE;
 			}
-			edge = agedge(g, symnode, filenode, NULL, FALSE);
-			if (edge == NULL){
-				edge = agedge(g, symnode, filenode, NULL, TRUE);
-			}
-			if (color != NULL)
-				agset(edge, "color", color);
+			
+			pclose(cmdo);
 		}else{
 			if (line[0] != '\r' && line[0] != '\n')
 				printf("UNEXPECTED DATA: %s\n", line);
