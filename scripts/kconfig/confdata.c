@@ -369,6 +369,12 @@ int c_read(const char *name, Agraph_t **graph, const char *color){
 		name = conf_get_configname();
 		config = zconf_fopen(name);
 	}
+
+	/* Config file does not exist */
+	if (config == NULL){
+	  printf("Configuration file %s does not exist\n", name);
+	  return ENOENT;
+	}
 	
 	conf_lineno = 0;
 
