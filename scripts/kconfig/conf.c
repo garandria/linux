@@ -620,7 +620,7 @@ int main(int ac, char **av)
 		  name = "out.dot";
 		if (diffcname){
 			memset(buf, 0, 256);
-			printf("GRAPHCONFIG_DIFF=%s\n", name);
+			printf("GRAPHCONFIG_DIFF=%s\n", diffcname);
 		}
 		no_conf_write = 1;
 		break;	
