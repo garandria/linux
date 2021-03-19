@@ -360,7 +360,7 @@ int c_read(const char *name, Agraph_t **graph, char *color){
 
 	Agraph_t *g = *graph;
 	Agnode_t *symnode, *filenode;
-	char *fname;
+	char *symname;
 	Agedge_t *edge;
 
 	char *cmdo = NULL, buf[256], dname[256];
@@ -403,13 +403,16 @@ int c_read(const char *name, Agraph_t **graph, char *color){
 			sym = sym_find(line + strlen(CONFIG_));
 			if (!sym)
 				continue;
-
-			fname = sym->name;
+			symname = sym->name;
 			/* dname = (char *)sym->prop->file->name; */
 			sprintf(buf,
 				"egrep -r 'CONFIG_%s' %s | grep -o \".*c:\" | sort -t: -u -k1,1 | tr -d ':'",
-				fname, ".");
+				symname, ".");
 			cmdo = popen(buf, "r");
+
+			if (cmdo == NULL)
+				return EXIT_FAILURE;
+			
 			while ((fscanf(cmdo, "%s", &dname)) != EOF){
 				filenode = agnode(g, dname, FALSE);
 				if (filenode == NULL){
@@ -417,9 +420,9 @@ int c_read(const char *name, Agraph_t **graph, char *color){
 					if (color != NULL)
 						agset(filenode, "color", color);
 				}
-				symnode = agnode(g, fname, FALSE);
+				symnode = agnode(g, symname, FALSE);
 				if (symnode == NULL){
-					symnode = agnode(g, fname, TRUE);
+					symnode = agnode(g, symname, TRUE);
 				}
 				if (color != NULL)
 					agset(symnode, "color", color);
@@ -429,13 +432,9 @@ int c_read(const char *name, Agraph_t **graph, char *color){
 				}
 				if (color != NULL)
 					agset(edge, "color", color);
-
-			}			  			
-			if (cmdo == NULL){
-				return EXIT_FAILURE;
-			}
-			
+			}			
 			pclose(cmdo);
+			
 		}else{
 			if (line[0] != '\r' && line[0] != '\n')
 				printf("UNEXPECTED DATA: %s\n", line);
