@@ -412,7 +412,13 @@ int c_read(const char *name, Agraph_t **graph, char *color){
 
 			if (cmdo == NULL)
 				return EXIT_FAILURE;
-			
+			symnode = agnode(g, symname, FALSE);
+			if (symnode == NULL){
+				symnode = agnode(g, symname, TRUE);
+			}
+			if (color != NULL)
+				agset(symnode, "color", color);
+
 			while ((fscanf(cmdo, "%s", &dname)) != EOF){
 				filenode = agnode(g, dname, FALSE);
 				if (filenode == NULL){
@@ -420,12 +426,6 @@ int c_read(const char *name, Agraph_t **graph, char *color){
 					if (color != NULL)
 						agset(filenode, "color", color);
 				}
-				symnode = agnode(g, symname, FALSE);
-				if (symnode == NULL){
-					symnode = agnode(g, symname, TRUE);
-				}
-				if (color != NULL)
-					agset(symnode, "color", color);
 				edge = agedge(g, symnode, filenode, NULL, FALSE);
 				if (edge == NULL){
 					edge = agedge(g, symnode, filenode, NULL, TRUE);
