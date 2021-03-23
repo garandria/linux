@@ -406,7 +406,7 @@ int c_read(const char *name, Agraph_t **graph, char *color){
 			symname = sym->name;
 			/* dname = (char *)sym->prop->file->name; */
 			sprintf(buf,
-				"egrep -r 'CONFIG_%s' %s | grep -o \".*c:\" | sort -t: -u -k1,1 | tr -d ':'",
+				"egrep -rw 'CONFIG_%s' %s | grep -o \".*c:\" | sort -t: -u -k1,1 | tr -d ':'",
 				symname, ".");
 			cmdo = popen(buf, "r");
 
