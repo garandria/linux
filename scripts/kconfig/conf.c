@@ -38,6 +38,7 @@ enum input_mode {
 	yes2modconfig,
 	mod2yesconfig,
 	graphconfig,
+	fixconfig,
 };
 static enum input_mode input_mode = oldaskconfig;
 
@@ -474,6 +475,7 @@ static struct option long_opts[] = {
 	{"yes2modconfig",   no_argument,       NULL, yes2modconfig},
 	{"mod2yesconfig",   no_argument,       NULL, mod2yesconfig},
 	{"graphconfig",     no_argument,       NULL, graphconfig},
+	{"fixconfig",       no_argument,       NULL, fixconfig},
 	{NULL, 0, NULL, 0}
 };
 
@@ -499,6 +501,7 @@ static void conf_usage(const char *progname)
 	printf("  --yes2modconfig         Change answers from yes to mod if possible\n");
 	printf("  --mod2yesconfig         Change answers from mod to yes if possible\n");
 	printf("  --graphconfig           Graph representation of option repartition\n");
+	printf("  --fixconfig             Fixes configuration dependecies\n");
 }
 
 
@@ -571,6 +574,7 @@ int main(int ac, char **av)
 		case olddefconfig:
 		case yes2modconfig:
 		case graphconfig:
+		case fixconfig:
 		case mod2yesconfig:
 			break;
 		case '?':
@@ -608,6 +612,7 @@ int main(int ac, char **av)
 	case helpnewconfig:
 	case olddefconfig:
 	case yes2modconfig:
+	case fixconfig:
 	case mod2yesconfig:
 		conf_read(NULL);
 		break;
@@ -734,6 +739,9 @@ int main(int ac, char **av)
 		agclose(g);
 		fclose(output);
 		break;
+	case fixconfig:
+	  conf_write(".config");
+	  no_conf_write = 1;	  
 	case olddefconfig:
 	default:
 		break;
