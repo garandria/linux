@@ -351,7 +351,7 @@ e_out:
 
 int c_read(const char *name, Agraph_t **graph, char *color){
 
-	FILE *config = NULL;
+	FILE *config = NULL, *cmdo = NULL;
 	int conf_lineno;
   	char   *line = NULL;
 	size_t  line_asize = 0;
@@ -363,7 +363,7 @@ int c_read(const char *name, Agraph_t **graph, char *color){
 	char *symname;
 	Agedge_t *edge;
 
-	char *cmdo = NULL, buf[256], dname[256];
+	char buf[256], dname[256];
 
 	memset(buf, 0, 256);
  	
@@ -419,7 +419,7 @@ int c_read(const char *name, Agraph_t **graph, char *color){
 			if (color != NULL)
 				agset(symnode, "color", color);
 
-			while ((fscanf(cmdo, "%s", &dname)) != EOF){
+			while ((fscanf(cmdo, "%s", dname)) != EOF){
 				filenode = agnode(g, dname, FALSE);
 				if (filenode == NULL){
 					filenode = agnode(g, dname, TRUE);
