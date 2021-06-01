@@ -364,6 +364,8 @@ int c_read(const char *name, Agraph_t **graph, char *color){
 	Agedge_t *edge;
 
 	char buf[256], dname[256];
+	char *codebase =
+		"arch/x86 block certs crypto drivers fs init include ipc kernel lib mm net samples scripts security sound tools usr virt";
 
 	memset(buf, 0, 256);
  	
@@ -406,8 +408,7 @@ int c_read(const char *name, Agraph_t **graph, char *color){
 			symname = sym->name;
 			/* dname = (char *)sym->prop->file->name; */
 			sprintf(buf,
-				"egrep -m 1 -rowl 'CONFIG_%s' %s --include=*.[ch] --include=Makefile",
-				symname, ".");
+				"egrep -m 1 -rowl 'CONFIG_%s' %s --include=*.[ch] --include=Makefile", symname, codebase);
 			cmdo = popen(buf, "r");
 
 			if (cmdo == NULL)
