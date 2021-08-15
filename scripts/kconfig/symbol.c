@@ -46,6 +46,8 @@ enum symbol_type sym_get_type(struct symbol *sym)
 	return type;
 }
 
+/* 
+ */
 const char *sym_type_name(enum symbol_type type)
 {
 	switch (type) {
@@ -760,6 +762,11 @@ const char *sym_get_string_default(struct symbol *sym)
 	return "";
 }
 
+
+/** Returns the current value of the symbol
+ ** param struct symbol *sym: a symbol
+ ** return const char*: symbol's value
+ */
 const char *sym_get_string_value(struct symbol *sym)
 {
 	tristate val;
