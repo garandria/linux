@@ -135,7 +135,7 @@ struct sfl_list *run_satconf(struct sdv_list *symbols)
 	/* check whether all values can be applied -> no need to run */
 	if (sdv_within_range(symbols)) {
 		printd("\nAll symbols are already within range.\n\n");
-		return sfl_list_init();
+		return NULL;
 	}
 
 	if (!init_done) {
