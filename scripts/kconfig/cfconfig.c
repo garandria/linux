@@ -43,72 +43,63 @@ static struct symbol *get_random_sym(void)
 }
 
 
-int main(int argc, char *argv[])
+static int fix_config(struct symbol *sym, char *newval)
 {
         struct sfl_list *diagnoses;
         struct sdv_list *symbols;
-        char buf[256], *option = argv[2], *newval = argv[3];
+        char buf[256];
         const char *currval;
-        struct symbol *sym;
         struct symbol_dvalue *sdv;
         struct sfl_node *node;
         unsigned int counter;
+        int ret;
 
         CFDEBUG = true;
 
-        printd("CONFIGFIX-CLI\n-------------\nModified for CMUT\n");
-        printd("Initialization: Kconfig, .config\n");
-
-        conf_parse(argv[1]);
-
-        if (conf_read(NULL)){
-          printd(".config not found!\n");
-          return EXIT_FAILURE;
-        }
-
         symbols = sdv_list_init();
-
-        if ((sym = sym_find(option)) == NULL){
-                printd("Symbol %s not found\n", option);
-                return EXIT_FAILURE;
-        }
 
         sdv = sym_create_sdv(sym, newval);
         currval = sym_get_string_value(sym);
 
         if (!(strcmp(currval, newval))){
-                printd("%s already set to %s\n", sym->name, newval);
+                printd("%s already set to %s\n", sym->name, currval);
                 return EXIT_SUCCESS;
         }
 
         printd("Change: %s (%s) %s -> %s\n",
                sym->name, sym_type_name(sym->type), currval, newval);
 
-        /* sym_calc_value(sym); */
-        /* conf_write("___CONFIG_TEST"); */
-        /* return EXIT_SUCCESS; */
-
         sdv_list_add(symbols, sdv);
 
         diagnoses = run_satconf(symbols);
 
+        counter = 0;
         if (diagnoses->size == 0){
                 printd("No diagnoses available: everything is OK for the change\n");
                 printd("sym_calc_value: update symbol's new value\n");
                 sym_calc_value(sym);
-                sprintf(buf, "___config%s", option);
-                conf_write(buf);
+                sprintf(buf, "___config%s_%s-%d", sym->name, newval, counter);
+                return conf_write(buf);
         } else {
                 /* print_diagnoses_symbol(diagnoses); */
-                counter = 1;
                 sfl_list_for_each(node, diagnoses){
                         apply_fix(node->elem);
                         print_diagnosis_symbol(node->elem);
                         /* printd("\nResetting config.\n"); */
-                        sprintf(buf, "___config%s-%d", option, counter++);
-                        conf_write(buf);
-                        conf_read(NULL);
+                        sprintf(buf, "___config%s_%s-%d", sym->name, newval, counter++);
+                        if ((ret = conf_write(buf)) < 0) {
+                                printd("Error writing configuration %s\n", buf);
+                                return ret;
+                        }
+                        if ((ret = conf_read(NULL)) < 0) {
+                                printd("Error conf_read\n");
+                                return ret;
+                        }
                 }
+        }
+        return EXIT_SUCCESS;
+}
+
 
         }
 
