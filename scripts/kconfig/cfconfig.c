@@ -52,7 +52,6 @@ static int fix_config(struct symbol *sym, char *newval)
         struct symbol_dvalue *sdv;
         struct sfl_node *node;
         unsigned int counter;
-        int ret;
 
         CFDEBUG = true;
 
@@ -63,7 +62,7 @@ static int fix_config(struct symbol *sym, char *newval)
 
         if (!(strcmp(currval, newval))){
                 printd("%s already set to %s\n", sym->name, currval);
-                return EXIT_SUCCESS;
+                return 0;
         }
 
         printd("Change: %s (%s) %s -> %s\n",
@@ -83,11 +82,14 @@ static int fix_config(struct symbol *sym, char *newval)
                 sym_calc_value(sym);
                 printf(" %s\n", sym_get_string_value(sym));
                 sprintf(buf, "___config%s_%s-%d", sym->name, newval, counter);
-                return conf_write(buf);
+                if (conf_write(buf) < 0)
+                        return -1;
+                return 1;
         }
 
         if (diagnoses->size == 0) {
                 printd("-> No diagnoses FOUND\n");
+                return -1;
         } else {
                 /* print_diagnoses_symbol(diagnoses); */
                 sfl_list_for_each(node, diagnoses){
@@ -95,17 +97,17 @@ static int fix_config(struct symbol *sym, char *newval)
                         print_diagnosis_symbol(node->elem);
                         /* printd("\nResetting config.\n"); */
                         sprintf(buf, "___config%s_%s-%d", sym->name, newval, counter++);
-                        if ((ret = conf_write(buf)) < 0) {
+                        if (conf_write(buf) < 0) {
                                 printd("Error writing configuration %s\n", buf);
-                                return ret;
+                                return -1;
                         }
-                        if ((ret = conf_read(NULL)) < 0) {
+                        if (conf_read(NULL) < 0) {
                                 printd("Error conf_read\n");
-                                return ret;
+                                return -1;
                         }
                 }
         }
-        return EXIT_SUCCESS;
+        return counter;
 }
 
 
