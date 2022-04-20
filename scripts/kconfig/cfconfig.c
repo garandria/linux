@@ -16,8 +16,9 @@ static struct symbol_dvalue * sym_create_sdv(struct symbol *sym, char *input);
 static void print_diagnoses_symbol(struct sfl_list *diag_sym);
 /* -------------------------------------- */
 
-static struct symbol *get_random_sym(void) {
-        int i, ri;
+static struct symbol *get_random_sym(void)
+{
+        int ri;
         struct timeval now;
         struct symbol *sym;
 
@@ -28,26 +29,17 @@ static struct symbol *get_random_sym(void) {
         gettimeofday(&now, NULL);
         srand((now.tv_sec + 1) * (now.tv_usec + 1));
 
-        ri = rand()%SYMBOL_HASHSIZE;
-        printf("random int: %d\n", ri);
-        for_all_symbols(i, sym) {
-                /* if (sym_has_value(sym) || sym->flags & SYMBOL_VALID) */
-                /*   continue; */
-                switch (sym_get_type(sym)) {
-                case S_BOOLEAN:
-                case S_TRISTATE:
-                        /* printf("%s", sym->name); */
-                        if (i == ri){
-                                printf("random symbol: %s %s %s\n",
-                                       sym_type_name(sym->type), sym->name,
-                                       sym_get_string_value(sym));
-                                return sym;
-                        }
-                default:
-                        continue;
-                }
-        }
-        return NULL;
+        for (ri = rand()%SYMBOL_HASHSIZE, sym = symbol_hash[ri];
+             (sym == NULL) ||
+                     (sym_get_type(sym) != S_BOOLEAN
+                      && sym_get_type(sym) != S_TRISTATE);
+             ri = rand()%SYMBOL_HASHSIZE, sym = symbol_hash[ri]);
+
+        printf("random symbol: %s %s %s\n",
+               sym_type_name(sym->type), sym->name,
+               sym_get_string_value(sym));
+
+        return sym;
 }
 
 
