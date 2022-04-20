@@ -74,12 +74,20 @@ static int fix_config(struct symbol *sym, char *newval)
         diagnoses = run_satconf(symbols);
 
         counter = 0;
-        if (diagnoses->size == 0){
-                printd("No diagnoses available: everything is OK for the change\n");
-                printd("sym_calc_value: update symbol's new value\n");
+        if (diagnoses == NULL) {
+                printd("-> Everything is OK for the change\n");
+                printd("\tsym_calc_value: update symbol's new value\n");
+                printf("\t\\_\tvalue (newval=%s): %s ->",
+                       newval, sym_get_string_value(sym));
+                sym_set_string_value(sym, newval);
                 sym_calc_value(sym);
+                printf(" %s\n", sym_get_string_value(sym));
                 sprintf(buf, "___config%s_%s-%d", sym->name, newval, counter);
                 return conf_write(buf);
+        }
+
+        if (diagnoses->size == 0) {
+                printd("-> No diagnoses FOUND\n");
         } else {
                 /* print_diagnoses_symbol(diagnoses); */
                 sfl_list_for_each(node, diagnoses){
