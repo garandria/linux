@@ -197,17 +197,3 @@ static struct symbol_dvalue * sym_create_sdv(struct symbol *sym, char *input)
 
 	return sdv;
 }
-
-/*
- * print the diagnoses of type symbol_fix
- */
-/* static void print_diagnoses_symbol(struct sfl_list *diag_sym) */
-/* { */
-/* 	struct sfl_node *arr; */
-/* 	unsigned int i = 1; */
-
-/* 	sfl_list_for_each(arr, diag_sym) { */
-/* 		printd(" %d: ", i++); */
-/* 		print_diagnosis_symbol(arr->elem); */
-/* 	} */
-/* } */
