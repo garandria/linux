@@ -163,7 +163,79 @@ static int fix_config(struct symbol *sym, char *newval)
 }
 
 
+int main(int argc, char *argv[])
+{
+        struct symbol *sym;
+        tristate val;
+        int written, notfound, ret, i, repet;
+        written = notfound = 0;
+
+
+        CFDEBUG = true;
+
+        printd("CONFIGFIX-CLI\n-------------\nModified for CMUT\n");
+        printd("Initialization: Kconfig, .config\n");
+
+        if (!(repet = atoi(argv[2]))) {
+                printf("Argument not a number\n");
+                return EXIT_FAILURE;
         }
+
+
+        conf_parse(argv[1]);
+
+
+        if (conf_read(NULL)){
+          printd(".config not found!\n");
+          return EXIT_FAILURE;
+        }
+
+        for (i=0; i < repet; i++) {
+                if ((sym = get_random_sym()) == NULL) {
+                        printd("Random configuration is not bool/tristate");
+                        return EXIT_FAILURE;
+                }
+
+                /* sym = sym_find("KFENCE_STATIC_KEYS"); */
+                val = sym_get_tristate_value(sym);
+
+                switch (sym_get_type(sym)) {
+                case S_BOOLEAN:
+                case S_TRISTATE: {
+
+                        switch (val) {
+                        case yes:
+                        case mod:
+                                if ((ret = fix_config(sym, "n")) < 0)
+                                        notfound++;
+                                else
+                                        written += ret;
+                                break;
+                        case no:
+                                if ((ret = fix_config(sym, "y")) < 0)
+                                        notfound++;
+                                else
+                                        written += ret;
+                                if (sym_get_type(sym) != S_BOOLEAN) {
+                                        if ((ret = fix_config(sym, "m")) < 0)
+                                                notfound++;
+                                        else
+                                                written += ret;
+                                }
+                                break;
+                        default:
+                                break;
+                        }
+                }
+                default:
+                        break;
+                }
+        }
+
+        printf("======================================================\n");
+        printf("* Sym draw  : %d\n", repet);
+        printf("* Written   : %d\n", written);
+        printf("* Not found : %d\n", notfound);
 
         return EXIT_SUCCESS;
 }
