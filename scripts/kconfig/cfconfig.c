@@ -106,6 +106,7 @@ static int fix_config(struct symbol *sym, char *newval)
         struct sfl_node *node;
         unsigned int counter;
 
+        conf_read(NULL);
 
         symbols = sdv_list_init();
 
