@@ -144,13 +144,10 @@ static int fix_config(struct symbol *sym, char *newval)
                 printd("-> No diagnoses FOUND\n");
                 return -1;
         } else {
-                /* print_diagnoses_symbol(diagnoses); */
-                sfl_list_for_each(node, diagnoses){
                 diagnoses_wodup = sfl_list_remove_duplicate(diagnoses);
                 sfl_list_for_each(node, diagnoses_wodup){
                         apply_fix(node->elem);
                         print_diagnosis_symbol(node->elem);
-                        /* printd("\nResetting config.\n"); */
                         sprintf(buf, "___config%s_%s-%d", sym->name, newval, counter++);
                         if (conf_write(buf) < 0) {
                                 printd("Error writing configuration %s\n", buf);
