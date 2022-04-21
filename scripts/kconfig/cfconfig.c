@@ -7,13 +7,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include "configfix.h"
 
 static struct symbol_dvalue * sym_create_sdv(struct symbol *sym, char *input);
-static void print_diagnoses_symbol(struct sfl_list *diag_sym);
 /* -------------------------------------- */
 
 static struct symbol *get_random_sym(void)
