@@ -176,11 +176,14 @@ int main(int argc, char *argv[])
         printd("CONFIGFIX-CLI\n-------------\nModified for CMUT\n");
         printd("Initialization: Kconfig, .config\n");
 
-        if (!(repet = atoi(argv[2]))) {
-                printf("Argument not a number\n");
-                return EXIT_FAILURE;
+        if (argc > 2) {
+          if (!(repet = atoi(argv[2]))) {
+            printf("Argument not a number\n");
+            return EXIT_FAILURE;
+          }
+        }else {
+          repet = 1;
         }
-
 
         conf_parse(argv[1]);
 
