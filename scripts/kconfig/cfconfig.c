@@ -240,6 +240,9 @@ int main(int argc, char *argv[])
         printf("* Written   : %d\n", written);
         printf("* Not found : %d\n", notfound);
 
+        if (!written)
+          return EXIT_FAILURE;
+
         return EXIT_SUCCESS;
 }
 
