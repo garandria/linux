@@ -22,6 +22,61 @@ static void handle_fixes(struct sfl_list *diag);
 
 /* -------------------------------------- */
 
+static int same_symbol_fix(struct symbol_fix *x, struct symbol_fix *y)
+{
+        return !(strcmp(sym_get_name(x->sym), sym_get_name(y->sym)))
+                && x->tri == y->tri;
+}
+
+static int same_sfix_node(struct sfix_node *x, struct sfix_node *y)
+{
+        return same_symbol_fix(x->elem, y->elem);
+}
+
+static int same_sfix_list(struct sfix_list *l1, struct sfix_list *l2)
+{
+        struct sfix_node *n1, *n2;
+        int found;
+
+        if (l1->size != l2->size)
+                return -1;
+
+        sfix_list_for_each(n1, l1) {
+                found = -1;
+                sfix_list_for_each(n2, l2) {
+                        if (same_sfix_node(n1, n2)) {
+                                found = 1;
+                                break;
+                        }
+                }
+                if (!found)
+                        return found;
+        }
+        return 1;
+}
+
+static int same_sfl_node(struct sfl_node *x, struct sfl_node *y)
+{
+        return same_sfix_list(x->elem, y->elem);
+}
+
+static struct sfl_list *sfl_list_remove_duplicate(struct sfl_list *l)
+{
+        struct sfl_node *n, *nn;
+        struct sfl_list *res = sfl_list_init();
+        sfl_list_add(res, l->head->elem);
+
+        sfl_list_for_each(n, l) {
+                sfl_list_for_each(nn, res) {
+                        if (!same_sfl_node(n, nn)) {
+                                sfl_list_add(res, n->elem);
+                                break;
+                        }
+                }
+        }
+        return res;
+}
+
 int main(int argc, char *argv[])
 {
 	CFDEBUG = true;
