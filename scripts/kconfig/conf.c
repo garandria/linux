@@ -35,6 +35,7 @@ enum input_mode {
 	olddefconfig,
 	yes2modconfig,
 	mod2yesconfig,
+	listoptions,
 };
 static enum input_mode input_mode = oldaskconfig;
 static int input_mode_opt;
@@ -696,6 +697,7 @@ static struct option long_opts[] = {
 	{"olddefconfig",  no_argument,       &input_mode_opt, olddefconfig},
 	{"yes2modconfig", no_argument,       &input_mode_opt, yes2modconfig},
 	{"mod2yesconfig", no_argument,       &input_mode_opt, mod2yesconfig},
+	{"listoptions",   no_argument,       &input_mode_opt, listoptions},
 	{NULL, 0, NULL, 0}
 };
 
@@ -724,6 +726,7 @@ static void conf_usage(const char *progname)
 	printf("  --randconfig            New config with random answer to all options\n");
 	printf("  --yes2modconfig         Change answers from yes to mod if possible\n");
 	printf("  --mod2yesconfig         Change answers from mod to yes if possible\n");
+	printf("  --listoptions          List options of $ARCH in stdout\n");
 	printf("  (If none of the above is given, --oldaskconfig is the default)\n");
 }
 
@@ -733,6 +736,9 @@ int main(int ac, char **av)
 	int opt;
 	const char *name, *defconfig_file = NULL /* gcc uninit */;
 	int no_conf_write = 0;
+	int i;
+	struct symbol *sym;
+
 
 	tty_stdio = isatty(0) && isatty(1);
 
@@ -776,10 +782,19 @@ int main(int ac, char **av)
 		conf_usage(progname);
 		exit(1);
 	}
+
+
 	conf_parse(av[optind]);
 	//zconfdump(stdout);
 
 	switch (input_mode) {
+	case listoptions:
+	  for_all_symbols(i, sym) {
+		if (sym && sym->name != NULL && sym->type != S_UNKNOWN)
+		  printf("%s,%s,%s\n",
+				 sym->name, sym_type_name(sym->type), sym->prop->file->name);
+	  }
+	  return 0;
 	case defconfig:
 		if (conf_read(defconfig_file)) {
 			fprintf(stderr,
