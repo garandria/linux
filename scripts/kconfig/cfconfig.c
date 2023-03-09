@@ -217,6 +217,7 @@ static void handle_fixes(struct sfl_list *diag)
 				node = node->next;
 
 		apply_fix(node->elem);
+		conf_write(NULL);
 
 		printd("\nResetting config.\n");
 		conf_read(NULL);
