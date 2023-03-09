@@ -116,6 +116,11 @@ int main(int argc, char *argv[])
 
 		if (diagnoses == NULL) {
 				printd("Ready\n");
+				sym_set_string_value(sym, newval);
+				sym_calc_value(sym);
+				if (conf_write(NULL) < 0) {
+						return EXIT_FAILURE;
+				}
 				return EXIT_SUCCESS;
 		}
 
