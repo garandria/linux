@@ -17,7 +17,6 @@
 #include "configfix.h"
 
 static struct symbol_dvalue * sym_create_sdv(struct symbol *sym, char *input);
-static void handle_fixes(struct sfl_list *diag);
 
 /* -------------------------------------- */
 
@@ -177,67 +176,4 @@ static struct symbol_dvalue * sym_create_sdv(struct symbol *sym, char *input)
 		}
 
 		return sdv;
-}
-
-/*
- * print the diagnoses of type symbol_fix
- */
-static void print_diagnoses_symbol(struct sfl_list *diag_sym)
-{
-		struct sfl_node *arr;
-		unsigned int i = 1;
-
-		sfl_list_for_each(arr, diag_sym) {
-				printd(" %d: ", i++);
-				print_diagnosis_symbol(arr->elem);
-		}
-}
-
-static void apply_all_adiagnoses(struct sfl_list *diag) {
-		printd("Applying all diagnoses now...\n");
-
-		unsigned int counter = 1;
-		struct sfl_node *node;
-		sfl_list_for_each(node, diag) {
-				printd("\nDiagnosis %d:\n", counter++);
-				apply_fix(node->elem);
-
-				printd("\nResetting config.\n");
-				conf_read(NULL);
-		}
-}
-
-/*
- * print all void print_fixes()
- */
-static void handle_fixes(struct sfl_list *diag)
-{
-		printd("=== GENERATED DIAGNOSES ===\n");
-		printd("-1: No changes wanted\n");
-		printd(" 0: Apply all diagnoses\n");
-		print_diagnoses_symbol(diag);
-
-		int choice;
-		printd("\n> Choose option: ");
-		if ((scanf("%d", &choice)) == EOF)
-				return;
-
-		if (choice == -1 || choice > diag->size)
-				return;
-
-		if (choice == 0) {
-				apply_all_adiagnoses(diag);
-				return;
-		}
-
-		unsigned int counter;
-		struct sfl_node *node = diag->head;
-		for (counter = 1; counter < choice; counter++)
-				node = node->next;
-
-		apply_fix(node->elem);
-		conf_write(NULL);
-
-		printd("\nResetting config.\n");
-		conf_read(NULL);
 }
