@@ -87,8 +87,6 @@ int main(int argc, char *argv[])
 				return EXIT_SUCCESS;
 		}
 
-		printd("\nCLI for configfix!\n");
-
 		init_config(argv[1]);
 
 		struct sfl_list *diagnoses, *ddiagnoses;
