@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 
 		init_config(argv[1]);
 
-		struct sfl_list *diagnoses;
+		struct sfl_list *diagnoses, *ddiagnoses;
 		struct sdv_list *symbols;
 		char *option = argv[2];
 		char *newval = argv[3];
@@ -124,7 +124,8 @@ int main(int argc, char *argv[])
 				return EXIT_FAILURE;
 		}
 
-		handle_fixes(diagnoses);
+		ddiagnoses = sfl_list_remove_duplicate(diagnoses);
+		handle_fixes(ddiagnoses);
 
 		return EXIT_SUCCESS;
 }
