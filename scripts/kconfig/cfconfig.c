@@ -130,9 +130,17 @@ int main(int argc, char *argv[])
 		}
 
 		ddiagnoses = sfl_list_remove_duplicate(diagnoses);
-		handle_fixes(ddiagnoses);
+		struct sfl_node *node;
+		sfl_list_for_each(node, ddiagnoses) {
+				if (apply_fix(node->elem) != 0){
+						if (conf_write(NULL) < 0) {
+								return EXIT_FAILURE;
+						}
+						return EXIT_SUCCESS;
+				}
+		}
 
-		return EXIT_SUCCESS;
+		return EXIT_FAILURE;
 }
 
 /*
