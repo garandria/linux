@@ -71,6 +71,7 @@ static struct sfl_list *sfl_list_remove_duplicate(struct sfl_list *l)
                                 sfl_list_add(res, n->elem);
                                 break;
                         }
+						printd("Fail!");
                 }
         }
         return res;
@@ -106,6 +107,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (!strcmp(sym_get_string_value(sym), newval)) {
+				printd("Symbol %s is already set to %s", option, newval);
 				return EXIT_SUCCESS;
 		}
 
@@ -132,6 +134,10 @@ int main(int argc, char *argv[])
 		ddiagnoses = sfl_list_remove_duplicate(diagnoses);
 		struct sfl_node *node;
 		sfl_list_for_each(node, ddiagnoses) {
+				if (CFDEBUG){
+						printd("Trying: \n");
+						print_diagnosis_symbol(node->elem);
+				}
 				if (apply_fix(node->elem) != 0){
 						if (conf_write(NULL) < 0) {
 								return EXIT_FAILURE;
