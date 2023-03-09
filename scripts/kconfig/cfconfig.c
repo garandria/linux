@@ -79,53 +79,53 @@ static struct sfl_list *sfl_list_remove_duplicate(struct sfl_list *l)
 
 int main(int argc, char *argv[])
 {
-	CFDEBUG = true;
+		CFDEBUG = true;
 
-	if (argc > 1 && !strcmp(argv[1], "-s")) {
-		printd("\nHello configfix!\n\n");
+		if (argc > 1 && !strcmp(argv[1], "-s")) {
+				printd("\nHello configfix!\n\n");
 
-		run_satconf_cli(argv[2]);
+				run_satconf_cli(argv[2]);
+				return EXIT_SUCCESS;
+		}
+
+		printd("\nCLI for configfix!\n");
+
+		init_config(argv[1]);
+
+		struct sfl_list *diagnoses;
+		struct sdv_list *symbols;
+
+		while(1) {
+				/* create the array */
+				symbols = sdv_list_init();
+
+				/* ask for user input */
+				struct symbol *sym = read_symbol_from_stdin();
+
+				/* If read_symbol_from_stdin() returns NULL, it means that the user
+				 * entered EOF. So quitting instead of segmentation fault. */
+				if (sym == NULL){
+						printd("\nQuitting...\nGood bye.\n");
+						break;
+				}
+
+				printd("Found symbol %s, type %s\n\n", sym->name, sym_type_name(sym->type));
+				printd("Current value: %s\n", sym_get_string_value(sym));
+				printd("Desired value: ");
+
+				char input[100];
+				if ((fgets(input, 100, stdin)) == NULL)
+						break;
+				strtok(input, "\n");
+
+				struct symbol_dvalue *sdv = sym_create_sdv(sym, input);
+				sdv_list_add(symbols, sdv);
+
+				diagnoses = run_satconf(symbols);
+				handle_fixes(diagnoses);
+		}
+
 		return EXIT_SUCCESS;
-	}
-
-	printd("\nCLI for configfix!\n");
-
-	init_config(argv[1]);
-
-	struct sfl_list *diagnoses;
-	struct sdv_list *symbols;
-
-	while(1) {
-		/* create the array */
-		symbols = sdv_list_init();
-
-		/* ask for user input */
-		struct symbol *sym = read_symbol_from_stdin();
-
-        /* If read_symbol_from_stdin() returns NULL, it means that the user
-         * entered EOF. So quitting instead of segmentation fault. */
-        if (sym == NULL){
-            printd("\nQuitting...\nGood bye.\n");
-            break;
-        }
-
-		printd("Found symbol %s, type %s\n\n", sym->name, sym_type_name(sym->type));
-		printd("Current value: %s\n", sym_get_string_value(sym));
-		printd("Desired value: ");
-
-		char input[100];
-		if ((fgets(input, 100, stdin)) == NULL)
-            break;
-		strtok(input, "\n");
-
-		struct symbol_dvalue *sdv = sym_create_sdv(sym, input);
-		sdv_list_add(symbols, sdv);
-
-		diagnoses = run_satconf(symbols);
-		handle_fixes(diagnoses);
-	}
-
-	return EXIT_SUCCESS;
 }
 
 /*
@@ -133,21 +133,21 @@ int main(int argc, char *argv[])
  */
 static struct symbol * read_symbol_from_stdin(void)
 {
-	char input[100];
-	struct symbol *sym = NULL;
+		char input[100];
+		struct symbol *sym = NULL;
 
-	printd("\n");
-	while (sym == NULL) {
-		printd("Enter symbol name: ");
-        if ((fgets(input, 100, stdin)) == NULL)
-            /* fgets() returns NULL on error or EOF. Break to avoid having input
-             * to NULL then no symbol found hence infinite loop. */
-            break;
-		strtok(input, "\n");
-		sym = sym_find(input);
-	}
+		printd("\n");
+		while (sym == NULL) {
+				printd("Enter symbol name: ");
+				if ((fgets(input, 100, stdin)) == NULL)
+						/* fgets() returns NULL on error or EOF. Break to avoid having input
+						 * to NULL then no symbol found hence infinite loop. */
+						break;
+				strtok(input, "\n");
+				sym = sym_find(input);
+		}
 
-	return sym;
+		return sym;
 }
 
 /*
@@ -155,29 +155,29 @@ static struct symbol * read_symbol_from_stdin(void)
  */
 static struct symbol_dvalue * sym_create_sdv(struct symbol *sym, char *input)
 {
-	struct symbol_dvalue *sdv = malloc(sizeof(struct symbol_dvalue));
-	sdv->sym = sym;
-	sdv->type = sym_is_boolean(sym) ? SDV_BOOLEAN : SDV_NONBOOLEAN;
+		struct symbol_dvalue *sdv = malloc(sizeof(struct symbol_dvalue));
+		sdv->sym = sym;
+		sdv->type = sym_is_boolean(sym) ? SDV_BOOLEAN : SDV_NONBOOLEAN;
 
-	if (sym_is_boolean(sym)) {
-		if (strcmp(input, "y") == 0)
-			sdv->tri = yes;
-		else if (strcmp(input, "m") == 0)
-			sdv->tri = mod;
-		else if (strcmp(input, "n") == 0)
-			sdv->tri = no;
-		else
-			perror("Not a valid tristate value.");
+		if (sym_is_boolean(sym)) {
+				if (strcmp(input, "y") == 0)
+						sdv->tri = yes;
+				else if (strcmp(input, "m") == 0)
+						sdv->tri = mod;
+				else if (strcmp(input, "n") == 0)
+						sdv->tri = no;
+				else
+						perror("Not a valid tristate value.");
 
-		/* sanitize input for booleans */
-		if (sym->type == S_BOOLEAN && sdv->tri == mod)
-			sdv->tri = yes;
-	} else if (sym_is_nonboolean(sym)) {
-		sdv->nb_val = str_new();
-		str_append(&sdv->nb_val, input);
-	}
+				/* sanitize input for booleans */
+				if (sym->type == S_BOOLEAN && sdv->tri == mod)
+						sdv->tri = yes;
+		} else if (sym_is_nonboolean(sym)) {
+				sdv->nb_val = str_new();
+				str_append(&sdv->nb_val, input);
+		}
 
-	return sdv;
+		return sdv;
 }
 
 /*
@@ -185,27 +185,27 @@ static struct symbol_dvalue * sym_create_sdv(struct symbol *sym, char *input)
  */
 static void print_diagnoses_symbol(struct sfl_list *diag_sym)
 {
-	struct sfl_node *arr;
-	unsigned int i = 1;
+		struct sfl_node *arr;
+		unsigned int i = 1;
 
-	sfl_list_for_each(arr, diag_sym) {
-		printd(" %d: ", i++);
-		print_diagnosis_symbol(arr->elem);
-	}
+		sfl_list_for_each(arr, diag_sym) {
+				printd(" %d: ", i++);
+				print_diagnosis_symbol(arr->elem);
+		}
 }
 
 static void apply_all_adiagnoses(struct sfl_list *diag) {
-	printd("Applying all diagnoses now...\n");
+		printd("Applying all diagnoses now...\n");
 
-	unsigned int counter = 1;
-	struct sfl_node *node;
-	sfl_list_for_each(node, diag) {
-		printd("\nDiagnosis %d:\n", counter++);
-		apply_fix(node->elem);
+		unsigned int counter = 1;
+		struct sfl_node *node;
+		sfl_list_for_each(node, diag) {
+				printd("\nDiagnosis %d:\n", counter++);
+				apply_fix(node->elem);
 
-		printd("\nResetting config.\n");
-		conf_read(NULL);
-	}
+				printd("\nResetting config.\n");
+				conf_read(NULL);
+		}
 }
 
 /*
@@ -213,31 +213,31 @@ static void apply_all_adiagnoses(struct sfl_list *diag) {
  */
 static void handle_fixes(struct sfl_list *diag)
 {
-	printd("=== GENERATED DIAGNOSES ===\n");
-	printd("-1: No changes wanted\n");
-	printd(" 0: Apply all diagnoses\n");
-	print_diagnoses_symbol(diag);
+		printd("=== GENERATED DIAGNOSES ===\n");
+		printd("-1: No changes wanted\n");
+		printd(" 0: Apply all diagnoses\n");
+		print_diagnoses_symbol(diag);
 
-	int choice;
-	printd("\n> Choose option: ");
-	if ((scanf("%d", &choice)) == EOF)
-        return;
+		int choice;
+		printd("\n> Choose option: ");
+		if ((scanf("%d", &choice)) == EOF)
+				return;
 
-	if (choice == -1 || choice > diag->size)
-		return;
+		if (choice == -1 || choice > diag->size)
+				return;
 
-	if (choice == 0) {
-		apply_all_adiagnoses(diag);
-		return;
-	}
+		if (choice == 0) {
+				apply_all_adiagnoses(diag);
+				return;
+		}
 
-	unsigned int counter;
-	struct sfl_node *node = diag->head;
-	for (counter = 1; counter < choice; counter++)
-		node = node->next;
+		unsigned int counter;
+		struct sfl_node *node = diag->head;
+		for (counter = 1; counter < choice; counter++)
+				node = node->next;
 
-	apply_fix(node->elem);
+		apply_fix(node->elem);
 
-	printd("\nResetting config.\n");
-	conf_read(NULL);
+		printd("\nResetting config.\n");
+		conf_read(NULL);
 }
