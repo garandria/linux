@@ -16,7 +16,6 @@
 
 #include "configfix.h"
 
-static struct symbol * read_symbol_from_stdin(void);
 static struct symbol_dvalue * sym_create_sdv(struct symbol *sym, char *input);
 static void handle_fixes(struct sfl_list *diag);
 
@@ -94,60 +93,40 @@ int main(int argc, char *argv[])
 
 		struct sfl_list *diagnoses;
 		struct sdv_list *symbols;
+		char *option = argv[2];
+		char *newval = argv[3];
 
-		while(1) {
-				/* create the array */
-				symbols = sdv_list_init();
+		/* create the array */
+		symbols = sdv_list_init();
 
-				/* ask for user input */
-				struct symbol *sym = read_symbol_from_stdin();
-
-				/* If read_symbol_from_stdin() returns NULL, it means that the user
-				 * entered EOF. So quitting instead of segmentation fault. */
-				if (sym == NULL){
-						printd("\nQuitting...\nGood bye.\n");
-						break;
-				}
-
-				printd("Found symbol %s, type %s\n\n", sym->name, sym_type_name(sym->type));
-				printd("Current value: %s\n", sym_get_string_value(sym));
-				printd("Desired value: ");
-
-				char input[100];
-				if ((fgets(input, 100, stdin)) == NULL)
-						break;
-				strtok(input, "\n");
-
-				struct symbol_dvalue *sdv = sym_create_sdv(sym, input);
-				sdv_list_add(symbols, sdv);
-
-				diagnoses = run_satconf(symbols);
-				handle_fixes(diagnoses);
+		struct symbol  *sym;
+		if (((sym = sym_find(option)) == NULL)) {
+				printd("Symbol %s not found!\n", option);
+				return EXIT_FAILURE;
 		}
+
+		if (!strcmp(sym_get_string_value(sym), newval)) {
+				return EXIT_SUCCESS;
+		}
+
+		struct symbol_dvalue *sdv = sym_create_sdv(sym, newval);
+		sdv_list_add(symbols, sdv);
+
+		diagnoses = run_satconf(symbols);
+
+		if (diagnoses == NULL) {
+				printd("Ready\n");
+				return EXIT_SUCCESS;
+		}
+
+		if (diagnoses->size == 0) {
+				printd("No diagnosis\n");
+				return EXIT_FAILURE;
+		}
+
+		handle_fixes(diagnoses);
 
 		return EXIT_SUCCESS;
-}
-
-/*
- * read a symbol name from stdin
- */
-static struct symbol * read_symbol_from_stdin(void)
-{
-		char input[100];
-		struct symbol *sym = NULL;
-
-		printd("\n");
-		while (sym == NULL) {
-				printd("Enter symbol name: ");
-				if ((fgets(input, 100, stdin)) == NULL)
-						/* fgets() returns NULL on error or EOF. Break to avoid having input
-						 * to NULL then no symbol found hence infinite loop. */
-						break;
-				strtok(input, "\n");
-				sym = sym_find(input);
-		}
-
-		return sym;
 }
 
 /*
