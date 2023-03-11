@@ -919,7 +919,9 @@ struct sfix_list * choose_fix(struct sfl_list *diag)
 
 	int choice;
 	printd("\n> Choose option: ");
-	scanf("%d", &choice);
+	if (scanf("%d", &choice) == EOF) {
+		return NULL;
+	}
 
 	/* no changes wanted */
 	if (choice == 0)
