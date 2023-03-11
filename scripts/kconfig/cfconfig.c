@@ -100,12 +100,12 @@ int main(int argc, char *argv[])
 		struct symbol  *sym;
 		if (((sym = sym_find(option)) == NULL)) {
 				printd("Symbol %s not found!\n", option);
-				return EXIT_FAILURE;
+				return -1;
 		}
 
 		if (!strcmp(sym_get_string_value(sym), newval)) {
 				printd("Symbol %s is already set to %s", option, newval);
-				return EXIT_SUCCESS;
+				return 42;
 		}
 
 		struct symbol_dvalue *sdv = sym_create_sdv(sym, newval);
@@ -118,14 +118,14 @@ int main(int argc, char *argv[])
 				sym_set_string_value(sym, newval);
 				sym_calc_value(sym);
 				if (conf_write(NULL) < 0) {
-						return EXIT_FAILURE;
+						return -1;
 				}
-				return EXIT_SUCCESS;
+				return 0;
 		}
 
 		if (diagnoses->size == 0) {
 				printd("No diagnosis\n");
-				return EXIT_FAILURE;
+				return -1;
 		}
 
 		ddiagnoses = sfl_list_remove_duplicate(diagnoses);
@@ -137,13 +137,13 @@ int main(int argc, char *argv[])
 				}
 				if (apply_fix(node->elem) != 0){
 						if (conf_write(NULL) < 0) {
-								return EXIT_FAILURE;
+								return -1;
 						}
-						return EXIT_SUCCESS;
+						return 0;
 				}
 		}
 
-		return EXIT_FAILURE;
+		return -1;
 }
 
 /*
