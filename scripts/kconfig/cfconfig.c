@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 				printd("\nHello configfix!\n\n");
 
 				run_satconf_cli(argv[2]);
-				return EXIT_SUCCESS;
+				return 0;
 		}
 
 		init_config(argv[1]);
