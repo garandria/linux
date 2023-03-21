@@ -293,7 +293,7 @@ int apply_fix(struct sfix_list *fix)
 	while (no_symbols_set < fix->size && !syms_have_target_value(fix)) {
 		if (iterations > fix->size * 2) {
 			printd("\nCould not apply all values :-(.\n");
-			return manually_changed;
+			return -manually_changed;
 		}
 
 		for (node = tmp->head; node != NULL;) {

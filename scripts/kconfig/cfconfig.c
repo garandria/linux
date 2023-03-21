@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 						printd("Trying:\n");
 						print_diagnosis_symbol(node->elem);
 				}
-				if (apply_fix(node->elem) != 0){
+				if (apply_fix(node->elem) >= 0){
 						if (conf_write(NULL) < 0) {
 								return -1;
 						}
