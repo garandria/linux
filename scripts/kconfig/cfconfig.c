@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 		struct sfl_node *node;
 		sfl_list_for_each(node, diagnoses) {
 				if (CFDEBUG){
-						printd("Trying: \n");
+						printd("Trying:\n");
 						print_diagnosis_symbol(node->elem);
 				}
 				if (apply_fix(node->elem) != 0){
