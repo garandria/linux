@@ -57,7 +57,18 @@ int main(int argc, char *argv[])
 
 		if (diagnoses == NULL) {
 				printd("Ready\n");
-				sym_set_string_value(sym, newval);
+				tristate val;
+				if (!strcmp(newval, "y"))
+						val = yes;
+				else if (!strcmp(newval, "m"))
+						val = mod;
+				else
+						val = no;
+				if (!sym_set_tristate_value(sym, val)){
+						printd("Ready but cannot set %s=%s\n",
+							   sym_get_name(sym), newval);
+						return -1;
+				}
 				sym_calc_value(sym);
 				if (conf_write(NULL) < 0) {
 						return -1;
