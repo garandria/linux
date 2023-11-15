@@ -703,23 +703,23 @@ void print_diagnosis_symbol(struct sfix_list *diag_sym)
 	struct symbol_fix *fix;
 	struct sfix_node *node;
 
-	printd("[");
+	printf("[");
 
 	sfix_list_for_each(node, diag_sym) {
 		fix = node->elem;
 
 		if (fix->type == SF_BOOLEAN) {
-			printd("%s => %s", fix->sym->name, tristate_get_char(fix->tri));
+			printf("%s => %s", fix->sym->name, tristate_get_char(fix->tri));
 		} else if (fix->type == SF_NONBOOLEAN) {
-			printd("%s => %s", fix->sym->name, str_get(&fix->nb_val));
+			printf("%s => %s", fix->sym->name, str_get(&fix->nb_val));
 		} else {
 			perror("NB not yet implemented.");
 		}
 
 		if (node->next != NULL)
-			printd(", ");
+			printf(", ");
 	}
-	printd("]\n");
+	printf("]\n");
 }
 
 /*
