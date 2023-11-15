@@ -35,7 +35,10 @@ int main(int argc, char *argv[])
 		struct sdv_list *symbols;
 		char *option; /** = argv[2]; **/
 		char *newval; /** = argv[3]; **/
-		int i;
+		int i, iter;
+		struct symbol *sym;
+		struct symbol_dvalue *sdv;
+		char outconfig[32];
 		/* create the array */
 		symbols = sdv_list_init();
 
@@ -44,7 +47,6 @@ int main(int argc, char *argv[])
 			option = argv[i];
 			newval = argv[i+1];
 
-			struct symbol  *sym;
 			if (((sym = sym_find(option)) == NULL)) {
 				printd("Symbol %s not found!\n", option);
 				return -1;
@@ -55,32 +57,30 @@ int main(int argc, char *argv[])
 				/* return 42; */
 			}
 
-			struct symbol_dvalue *sdv = sym_create_sdv(sym, newval);
+			sdv = sym_create_sdv(sym, newval);
 			sdv_list_add(symbols, sdv);
 		}
 
 		diagnoses = run_satconf(symbols);
 
+		struct sdv_node *snode;
+		iter = 0;
 		if (diagnoses == NULL) {
 			printf("=> Ready\n");
-			/* printd("Ready\n"); */
-			/* tristate val; */
-			/* if (!strcmp(newval, "y")) */
-			/* 	val = yes; */
-			/* else if (!strcmp(newval, "m")) */
-			/* 	val = mod; */
-			/* else */
-			/* 	val = no; */
-			/* if (!sym_set_tristate_value(sym, val)){ */
-			/* 	printd("Ready but cannot set %s=%s\n", */
-			/* 	       sym_get_name(sym), newval); */
-			/* 	return -1; */
-			/* } */
-			/* sym_calc_value(sym); */
-			/* if (conf_write(NULL) < 0) { */
-			/* 	return -1; */
-			/* } */
-			/* return 0; */
+			tristate val;
+			sdv_list_for_each(snode, symbols){
+				sdv = snode->elem;
+				sym = sdv->sym;
+				val = sdv->tri;
+				if (!sym_set_tristate_value(sym, val))
+					return -1;
+				sym_calc_value(sym);
+			}
+			sprintf(outconfig, ".config.%d", iter);
+			if (conf_write(outconfig) < 0) {
+				return -1;
+			}
+			return 0;
 		}
 
 		if (diagnoses->size == 0) {
@@ -88,8 +88,7 @@ int main(int argc, char *argv[])
 			return -1;
 		}
 		struct sfl_node *node;
-		char outconfig[32];
-		int iter = 1;
+		iter = 1;
 		sfl_list_for_each(node, diagnoses) {
 			printf("%d: ", iter);
 			print_diagnosis_symbol(node->elem);
